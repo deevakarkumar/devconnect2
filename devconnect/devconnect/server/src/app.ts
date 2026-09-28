@@ -1,0 +1,23 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+import auth from './routes/auth';
+import users from './routes/users';
+import blog from './routes/blog';
+import social from './routes/social';
+import { fail } from './lib';
+
+export const app = express();
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60e3, limit: 100 }), auth);
+app.get('/api/health', (_q, res) => res.json({ success: true, data: null, message: 'ok' }));
+app.use('/api/users', users);
+app.use('/api/posts', blog);
+app.use('/api', social);
+app.use((err: Error, _q: express.Request, res: express.Response, _n: express.NextFunction) => { console.error(err); fail(res, 'Server error', 500); });

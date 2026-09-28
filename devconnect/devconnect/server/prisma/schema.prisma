@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(cuid())
+  email             String         @unique
+  passwordHash      String?
+  githubId          String?        @unique
+  username          String         @unique
+  name              String
+  bio               String?
+  location          String?
+  avatarUrl         String?
+  createdAt         DateTime       @default(now())
+  projects          Project[]
+  posts             BlogPost[]
+  skills            Skill[]
+  endorsementsGiven Endorsement[]
+  sent              Connection[]   @relation("requester")
+  received          Connection[]   @relation("receiver")
+  notifications     Notification[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  techStack   String[]
+  liveUrl     String?
+  repoUrl     String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  views     Int      @default(0)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Skill {
+  id           String        @id @default(cuid())
+  name         String
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endorsements Endorsement[]
+
+  @@unique([userId, name])
+}
+
+model Endorsement {
+  id         String @id @default(cuid())
+  skillId    String
+  endorserId String
+  skill      Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  endorser   User   @relation(fields: [endorserId], references: [id], onDelete: Cascade)
+
+  @@unique([skillId, endorserId])
+}
+
+model Connection {
+  id          String   @id @default(cuid())
+  requesterId String
+  receiverId  String
+  status      String   @default("PENDING")
+  requester   User     @relation("requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiver    User     @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([requesterId, receiverId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
