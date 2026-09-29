@@ -11,8 +11,9 @@ import { fail } from './lib';
 
 export const app = express();
 app.set('trust proxy', 1);
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (_req, res) => res.status(204).end());
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60e3, limit: 100 }), auth);
