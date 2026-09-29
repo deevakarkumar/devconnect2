@@ -5,7 +5,7 @@
     "dev": "npm --prefix devconnect/devconnect run dev",
     "dev:server": "npm --prefix devconnect/devconnect run dev:server",
     "dev:client": "npm --prefix devconnect/devconnect run dev:client",
-    "build": "npm --prefix devconnect/devconnect run build",
+    "build": "npm --prefix devconnect/devconnect install && npm --prefix devconnect/devconnect run build:client && node -e \"const fs=require('fs'); fs.cpSync('devconnect/devconnect/client/dist', 'dist', {recursive: true});\"",
     "start": "npm --prefix devconnect/devconnect run start",
     "test": "npm --prefix devconnect/devconnect run test"
   }
